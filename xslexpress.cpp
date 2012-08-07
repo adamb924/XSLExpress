@@ -69,8 +69,12 @@ void XSLExpress::process()
             continue;
         }
 
+        QFileInfo info(inputFiles.at(i));
+        QString errorFilename = info.absoluteDir().filePath( tr("Error %1.txt").arg(info.fileName()) );
+        qDebug() << errorFilename;
+
         QProcess *myProcess = new QProcess(this);
-        myProcess->setStandardErrorFile("error.txt");
+        myProcess->setStandardErrorFile(errorFilename);
         QStringList arguments;
 
         arguments << "-o" << outputFile;
@@ -102,9 +106,12 @@ void XSLExpress::process()
 
         if( myProcess->exitCode() != 0 )
         {
-            failures += inputFiles.at(i) + tr(" (see error.txt)\n");
+            failures += inputFiles.at(i) + tr(" (see %1)\n").arg(errorFilename);
+            QProcess::startDetached ( errorFilename );
             continue;
         }
+
+        delete myProcess;
     }
     progress.setValue(inputFiles.count());
 
@@ -192,7 +199,7 @@ void XSLExpress::loadParametersFromXsl(bool withDefaults)
     if( xslFile.isEmpty() )
         return;
 
-    /* Find the parameters that the XSL file is requesting */
+    // Find the parameters that the XSL file is requesting
     QStringList parameters, values;
     QFile file(xslFile);
     if(! file.open(QFile::ReadOnly | QFile::Text) ) { return; }

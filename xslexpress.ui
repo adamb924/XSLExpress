@@ -153,19 +153,19 @@
        <widget class="QLineEdit" name="paramName5"/>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="paramValue1"/>
+       <widget class="DropFilenameLineEdit" name="paramValue1"/>
       </item>
       <item row="2" column="1">
-       <widget class="QLineEdit" name="paramValue2"/>
+       <widget class="DropFilenameLineEdit" name="paramValue2"/>
       </item>
       <item row="3" column="1">
-       <widget class="QLineEdit" name="paramValue3"/>
+       <widget class="DropFilenameLineEdit" name="paramValue3"/>
       </item>
       <item row="4" column="1">
-       <widget class="QLineEdit" name="paramValue4"/>
+       <widget class="DropFilenameLineEdit" name="paramValue4"/>
       </item>
       <item row="5" column="1">
-       <widget class="QLineEdit" name="paramValue5"/>
+       <widget class="DropFilenameLineEdit" name="paramValue5"/>
       </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label_6">
