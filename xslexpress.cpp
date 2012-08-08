@@ -69,6 +69,8 @@ void XSLExpress::process()
             continue;
         }
 
+        qDebug() << outputFile;
+
         QFileInfo info(inputFiles.at(i));
         QString errorFilename = info.absoluteDir().filePath( tr("Error %1.txt").arg(info.fileName()) );
         qDebug() << errorFilename;
@@ -101,15 +103,19 @@ void XSLExpress::process()
         if( !myProcess->waitForFinished(300000) )
         {
             failures += inputFiles.at(i) + tr(" (timeout after 5 minutes)\n");
+            delete myProcess;
             continue;
         }
 
         if( myProcess->exitCode() != 0 )
         {
             failures += inputFiles.at(i) + tr(" (see %1)\n").arg(errorFilename);
-            QProcess::startDetached ( errorFilename );
+            delete myProcess;
             continue;
         }
+        QFileInfo errorFileInfo(errorFilename);
+        if( errorFileInfo.size() == 0 )
+            QFile::remove(errorFilename);
 
         delete myProcess;
     }
