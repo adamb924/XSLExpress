@@ -2,6 +2,8 @@
 #define XSLEXPRESS_H
 
 #include <QtGui/QWidget>
+#include <QList>
+#include <QLineEdit>
 #include "ui_xslexpress.h"
 
 class QSettings;
@@ -20,10 +22,16 @@ private:
 
     void populateCombo();
 
-    void loadParametersFromXsl(bool withDefaults = false);
+    bool loadParametersFromXsl(bool withDefaults = false);
     void testForXsltproc();
 
     QString mPath;
+
+    QList<QLineEdit*> aParameterNames;
+    QList<DropFilenameLineEdit*> aParameterValues;
+
+    void removeParameterLineEdits();
+    void setParameterBoxVisibility();
 
 private slots:
     void autoProcess();

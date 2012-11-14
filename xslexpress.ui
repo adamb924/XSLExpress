@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>398</width>
-    <height>417</height>
+    <width>409</width>
+    <height>442</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -19,220 +19,258 @@
   <property name="windowTitle">
    <string>XSLExpress</string>
   </property>
-  <widget class="QWidget" name="verticalLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>380</width>
-     <height>398</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <layout class="QHBoxLayout" name="settingsLayout">
-      <item>
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Saved Settings</string>
+  <layout class="QVBoxLayout" name="verticalLayout_3">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetNoConstraint</enum>
+     </property>
+     <item>
+      <layout class="QHBoxLayout" name="settingsLayout">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Saved Settings</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="savedSettings">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="saveCurrent">
+         <property name="text">
+          <string>Save</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="deleteCurrent">
+         <property name="text">
+          <string>Delete</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="filenamesLayout">
+       <item>
+        <widget class="QLabel" name="replaceThisLabel">
+         <property name="text">
+          <string>Output. Replace:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="replaceThis">
+         <property name="text">
+          <string>\.xml</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="replaceWithLabel">
+         <property name="text">
+          <string>with</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="replaceWith">
+         <property name="text">
+          <string>-output.xml</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="xslLayout">
+       <item>
+        <widget class="QLabel" name="xslFileLabel">
+         <property name="text">
+          <string>XSL File</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="DropFilenameLineEdit" name="xslFile"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="parameterBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="title">
+        <string>Parameters</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <property name="spacing">
+         <number>0</number>
         </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="savedSettings">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
+        <property name="margin">
+         <number>3</number>
         </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="saveCurrent">
-        <property name="text">
-         <string>Save</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="deleteCurrent">
-        <property name="text">
-         <string>Delete</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="filenamesLayout">
-      <item>
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>Output. Replace:</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="replaceThis">
-        <property name="text">
-         <string>\.xml</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>with</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="replaceWith">
-        <property name="text">
-         <string>-output.xml</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="xslLayout">
-      <item>
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>XSL File</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="DropFilenameLineEdit" name="xslFile"/>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QPushButton" name="getParameters">
-        <property name="text">
-         <string>Load parameters</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="getParametersWithDefaults">
-        <property name="text">
-         <string>Load parameters with default values</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="clearValues">
-        <property name="text">
-         <string>Clear values</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="1" column="0">
-       <widget class="QLineEdit" name="paramName1"/>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLineEdit" name="paramName2"/>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLineEdit" name="paramName3"/>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLineEdit" name="paramName4"/>
-      </item>
-      <item row="5" column="0">
-       <widget class="QLineEdit" name="paramName5"/>
-      </item>
-      <item row="1" column="1">
-       <widget class="DropFilenameLineEdit" name="paramValue1"/>
-      </item>
-      <item row="2" column="1">
-       <widget class="DropFilenameLineEdit" name="paramValue2"/>
-      </item>
-      <item row="3" column="1">
-       <widget class="DropFilenameLineEdit" name="paramValue3"/>
-      </item>
-      <item row="4" column="1">
-       <widget class="DropFilenameLineEdit" name="paramValue4"/>
-      </item>
-      <item row="5" column="1">
-       <widget class="DropFilenameLineEdit" name="paramValue5"/>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>Parameter Name</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLabel" name="label_7">
-        <property name="text">
-         <string>Parameter Value</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="inputLayout">
-      <item>
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Files</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="DropFilenameTextEdit" name="inputFiles"/>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="processLayout">
-      <item>
-       <widget class="QCheckBox" name="processImmediately">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Process files upon drop</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="process">
-        <property name="text">
-         <string>Process</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <widget class="QCheckBox" name="allowOverwrite">
-      <property name="text">
-       <string>Overwrite input files if the regular expression does not change them</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
+        <item>
+         <layout class="QVBoxLayout" name="parameterBoxLayout">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <item>
+           <layout class="QGridLayout" name="parameterGridLayout">
+            <property name="verticalSpacing">
+             <number>0</number>
+            </property>
+            <item row="0" column="0">
+             <widget class="QLabel" name="parameterName">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Parameter Name</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLabel" name="parameterValue">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Parameter Value</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QPushButton" name="getParametersWithDefaults">
+              <property name="text">
+               <string>Load default parameter values</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="clearValues">
+              <property name="text">
+               <string>Clear values</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="inputFilesLayout">
+       <property name="spacing">
+        <number>6</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="inputFilesLabel">
+         <property name="text">
+          <string>Files</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="DropFilenameTextEdit" name="inputFiles">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>1</horstretch>
+           <verstretch>1</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>100</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="processLayout">
+       <item>
+        <widget class="QCheckBox" name="processImmediately">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Process files upon drop</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="process">
+         <property name="text">
+          <string>Process</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="allowOverwrite">
+       <property name="text">
+        <string>Overwrite input files if the regular expression does not change them</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -252,16 +290,6 @@
   <tabstop>replaceThis</tabstop>
   <tabstop>replaceWith</tabstop>
   <tabstop>xslFile</tabstop>
-  <tabstop>paramName1</tabstop>
-  <tabstop>paramValue1</tabstop>
-  <tabstop>paramName2</tabstop>
-  <tabstop>paramValue2</tabstop>
-  <tabstop>paramName3</tabstop>
-  <tabstop>paramValue3</tabstop>
-  <tabstop>paramName4</tabstop>
-  <tabstop>paramValue4</tabstop>
-  <tabstop>paramName5</tabstop>
-  <tabstop>paramValue5</tabstop>
   <tabstop>inputFiles</tabstop>
   <tabstop>processImmediately</tabstop>
   <tabstop>allowOverwrite</tabstop>

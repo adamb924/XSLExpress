@@ -13,6 +13,8 @@ XSLExpress::XSLExpress(QWidget *parent)
 
     testForXsltproc();
 
+    setParameterBoxVisibility();
+
     populateCombo();
 
     connect( ui.process, SIGNAL(clicked()), this, SLOT(process()) );
@@ -20,9 +22,9 @@ XSLExpress::XSLExpress(QWidget *parent)
     connect( ui.saveCurrent, SIGNAL(clicked()), this, SLOT(saveCurrent()) );
     connect( ui.deleteCurrent, SIGNAL(clicked()), this, SLOT(deleteCurrent()) );
     connect( ui.savedSettings, SIGNAL(currentIndexChanged(QString)), this, SLOT(settingsChosen(QString)) );
-    connect( ui.getParameters, SIGNAL(clicked()), this, SLOT(loadParameters()) );
     connect( ui.getParametersWithDefaults, SIGNAL(clicked()), this, SLOT(loadParametersWithDefaults()));
     connect( ui.clearValues, SIGNAL(clicked()), this, SLOT(clearValues()) );
+    connect( ui.xslFile, SIGNAL(textChanged(QString)), this, SLOT(loadParametersWithDefaults()) );
 }
 
 XSLExpress::~XSLExpress()
@@ -69,11 +71,8 @@ void XSLExpress::process()
             continue;
         }
 
-        qDebug() << outputFile;
-
         QFileInfo info(inputFiles.at(i));
         QString errorFilename = info.absoluteDir().filePath( tr("Error %1.txt").arg(info.fileName()) );
-        qDebug() << errorFilename;
 
         QProcess *myProcess = new QProcess(this);
         myProcess->setStandardErrorFile(errorFilename);
@@ -81,16 +80,13 @@ void XSLExpress::process()
 
         arguments << "-o" << outputFile;
 
-        if( !ui.paramName1->text().isEmpty() )
-            arguments << "--param" << ui.paramName1->text() << "'" + ui.paramValue1->text() + "'";
-        if( !ui.paramName2->text().isEmpty() )
-            arguments << "--param" << ui.paramName2->text() << "'" + ui.paramValue2->text() + "'";
-        if( !ui.paramName3->text().isEmpty() )
-            arguments << "--param" << ui.paramName3->text() << "'" + ui.paramValue3->text() + "'";
-        if( !ui.paramName4->text().isEmpty() )
-            arguments << "--param" << ui.paramName4->text() << "'" + ui.paramValue4->text() + "'";
-        if( !ui.paramName5->text().isEmpty() )
-            arguments << "--param" << ui.paramName5->text() << "'" + ui.paramValue5->text() + "'";
+        for(int j=0; j<aParameterValues.count(); j++)
+        {
+            if( !aParameterNames.at(j)->text().isEmpty() && !aParameterValues.at(j)->text().isEmpty() )
+            {
+                arguments << "--param" << aParameterNames.at(j)->text() << "'" + aParameterValues.at(j)->text() + "'";
+            }
+        }
 
         arguments << xslFile << inputFiles.at(i);
 
@@ -136,16 +132,11 @@ void XSLExpress::saveCurrent()
     settingsString += ui.replaceThis->text() + "\n";
     settingsString += ui.replaceWith->text() + "\n";
     settingsString += ui.xslFile->text() + "\n";
-    settingsString += ui.paramName1->text() + "\n";
-    settingsString += ui.paramValue1->text() + "\n";
-    settingsString += ui.paramName2->text() + "\n";
-    settingsString += ui.paramValue2->text() + "\n";
-    settingsString += ui.paramName3->text() + "\n";
-    settingsString += ui.paramValue3->text() + "\n";
-    settingsString += ui.paramName4->text() + "\n";
-    settingsString += ui.paramValue4->text() + "\n";
-    settingsString += ui.paramName5->text() + "\n";
-    settingsString += ui.paramValue5->text();
+    for(int i=0; i<aParameterValues.count(); i++)
+    {
+        settingsString += aParameterNames.at(i)->text() + "\n";
+        settingsString += aParameterValues.at(i)->text() + "\n";
+    }
 
     mSettings->setValue(name , settingsString );
 
@@ -164,22 +155,31 @@ void XSLExpress::settingsChosen( const QString & text )
         return;
 
     QStringList settings =  mSettings->value(text,"").toString().split("\n", QString::KeepEmptyParts );
-    if( settings.count() != 13 )
+    if( settings.count() < 3 )
         return;
+
+    QString xslFilename = settings.at(2);
+    if( !QFile::exists(xslFilename) )
+    {
+        if( QMessageBox::question(this,tr("XSLExpress"),tr("The XSL file specified in these settings cannot be found. Do you wish to delete these settings?"), QMessageBox::Yes|QMessageBox::No, QMessageBox::No) == QMessageBox::Yes )
+            deleteCurrent();
+        return;
+    }
 
     ui.replaceThis->setText( settings.at(0) );
     ui.replaceWith->setText( settings.at(1) );
-    ui.xslFile->setText( settings.at(2) );
-    ui.paramName1->setText( settings.at(3) );
-    ui.paramValue1->setText( settings.at(4) );
-    ui.paramName2->setText( settings.at(5) );
-    ui.paramValue2->setText( settings.at(6) );
-    ui.paramName3->setText( settings.at(7) );
-    ui.paramValue3->setText( settings.at(8) );
-    ui.paramName4->setText( settings.at(9) );
-    ui.paramValue4->setText( settings.at(10) );
-    ui.paramName5->setText( settings.at(11) );
-    ui.paramValue5->setText( settings.at(12) );
+    ui.xslFile->setText( xslFilename );
+
+    for(int i=0; i < qMin(aParameterValues.count(),(settings.count()-3)/2); i++)
+    {
+        aParameterNames.at(i)->setText( settings.at(3 + 2*i) );
+        aParameterValues.at(i)->setText( settings.at(3 + 2*i + 1) );
+    }
+
+    if( aParameterValues.count() != (settings.count()-3)/2 )
+    {
+        QMessageBox::information(this,tr("XSLExpress"),tr("The number of parameters in the XSL file and in the saved settings does not match. You should recheck the values to see if they are correct."));
+    }
 }
 
 void XSLExpress::populateCombo()
@@ -199,25 +199,38 @@ void XSLExpress::loadParameters()
     loadParametersFromXsl(false);
 }
 
-void XSLExpress::loadParametersFromXsl(bool withDefaults)
-{
+bool XSLExpress::loadParametersFromXsl(bool withDefaults)
+{    
     QString xslFile = ui.xslFile->text();
     if( xslFile.isEmpty() )
-        return;
+        return false;
+
+    removeParameterLineEdits();
 
     // Find the parameters that the XSL file is requesting
-    QStringList parameters, values;
     QFile file(xslFile);
-    if(! file.open(QFile::ReadOnly | QFile::Text) ) { return; }
+    if(! file.open(QFile::ReadOnly | QFile::Text) ) { return false; }
     QXmlStreamReader xml(&file);
+    int count = 0;
     while (!xml.atEnd())
     {
         if(xml.readNext() == QXmlStreamReader::StartElement)
         {
             if( xml.name().toString() == "param" && xml.namespaceUri() == "http://www.w3.org/1999/XSL/Transform" )
             {
-                parameters << xml.attributes().value("name").toString();
-                values << xml.readElementText();
+                QString name = xml.attributes().value("name").toString();
+                QString value = xml.readElementText();
+
+                aParameterNames << new QLineEdit();
+                aParameterNames.last()->setText(name);
+                ui.parameterGridLayout->addWidget(aParameterNames.last(),count+1,0);
+
+                aParameterValues << new DropFilenameLineEdit(this);
+                if( withDefaults )
+                    aParameterValues.last()->setText(value);
+                ui.parameterGridLayout->addWidget(aParameterValues.last(),count+1,1);
+
+                count++;
             }
             if( xml.name().toString() == "template" && xml.namespaceUri() == "http://www.w3.org/1999/XSL/Transform" ) // we've moved past the initial parameters
                 break;
@@ -225,44 +238,34 @@ void XSLExpress::loadParametersFromXsl(bool withDefaults)
     }
     file.close();
 
-    int len = parameters.length();
-    if(len > 5)
-        QMessageBox::information(this,tr("XSLExpress"),tr("The .xsl file is requesting %1 parameters, which is too many. The first five will be loaded.").arg(len));
+    setParameterBoxVisibility();
 
-    if( len > 0 )
-        ui.paramName1->setText( parameters.at(0) );
-    if( len > 1 )
-        ui.paramName2->setText( parameters.at(1) );
-    if( len > 2 )
-        ui.paramName3->setText( parameters.at(2) );
-    if( len > 3 )
-        ui.paramName4->setText( parameters.at(3) );
-    if( len > 4 )
-        ui.paramName5->setText( parameters.at(4) );
+    return true;
+}
 
-    if( withDefaults )
-    {
-        if( len > 0 )
-            ui.paramValue1->setText( values.at(0) );
-        if( len > 1 )
-            ui.paramValue2->setText( values.at(1) );
-        if( len > 2 )
-            ui.paramValue3->setText( values.at(2) );
-        if( len > 3 )
-            ui.paramValue4->setText( values.at(3) );
-        if( len > 4 )
-            ui.paramValue5->setText( values.at(4) );
-    }
+void XSLExpress::removeParameterLineEdits()
+{
+    ui.parameterName->setVisible(false);
+    ui.parameterValue->setVisible(false);
 
+    qDeleteAll(aParameterNames);
+    aParameterNames.clear();
+    qDeleteAll(aParameterValues);
+    aParameterValues.clear();
+}
+
+void XSLExpress::setParameterBoxVisibility()
+{
+    if( aParameterNames.count() > 0 )
+        ui.parameterBox->setVisible(true);
+    else
+        ui.parameterBox->setVisible(false);
 }
 
 void XSLExpress::clearValues()
 {
-    ui.paramValue1->setText( "" );
-    ui.paramValue2->setText( "" );
-    ui.paramValue3->setText( "" );
-    ui.paramValue4->setText( "" );
-    ui.paramValue5->setText( "" );
+    for(int i=0; i<aParameterValues.count(); i++)
+        aParameterValues.at(i)->setText("");
 }
 
 void XSLExpress::testForXsltproc()
