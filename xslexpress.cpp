@@ -1,8 +1,11 @@
 #include "xslexpress.h"
 
-#include <QProcess>
 #include <QtDebug>
 #include <QtGui>
+#include <QProgressDialog>
+#include <QHash>
+
+#include "xsltproc.h"
 
 XSLExpress::XSLExpress(QWidget *parent)
     : QWidget(parent)
@@ -10,8 +13,6 @@ XSLExpress::XSLExpress(QWidget *parent)
     ui.setupUi(this);
 
     mSettings = new QSettings("AdamBaker","XSLExpress");
-
-    testForXsltproc();
 
     setParameterBoxVisibility();
 
@@ -56,6 +57,8 @@ void XSLExpress::process()
     QProgressDialog progress( tr("Processing files..."), tr("Cancel"), 0, inputFiles.count(), 0);
     progress.setWindowModality(Qt::WindowModal);
 
+    Xsltproc transform;
+
     for( int i=0; i<inputFiles.count(); i++)
     {
         progress.setValue(i);
@@ -74,46 +77,39 @@ void XSLExpress::process()
         QFileInfo info(inputFiles.at(i));
         QString errorFilename = info.absoluteDir().filePath( tr("Error %1.txt").arg(info.fileName()) );
 
-        QProcess *myProcess = new QProcess(this);
-        myProcess->setStandardErrorFile(errorFilename);
-        QStringList arguments;
-
-        arguments << "-o" << outputFile;
-
+        QHash<QString,QString> parameters;
         for(int j=0; j<aParameterValues.count(); j++)
-        {
-            if( !aParameterNames.at(j)->text().isEmpty() && !aParameterValues.at(j)->text().isEmpty() )
-            {
-                arguments << "--param" << aParameterNames.at(j)->text() << "'" + aParameterValues.at(j)->text() + "'";
-            }
-        }
+            if( !aParameterNames.at(j)->text().isEmpty() )
+                parameters.insert( aParameterNames.at(j)->text() , aParameterValues.at(j)->text() );
 
-        arguments << xslFile << inputFiles.at(i);
+        transform.setStyleSheet(xslFile);
+        transform.setXmlFilename( inputFiles.at(i) );
+        transform.setOutputFilename(outputFile);
+        transform.setErrorFilename(errorFilename);
+        transform.setParameters(parameters);
+        Xsltproc::ReturnValue retval = transform.execute();
 
-        if( mPath.isEmpty() )
-            myProcess->start("xsltproc", arguments);
-        else
-            myProcess->start(mPath, arguments);
-
-        // wait up to five minutes per file
-        if( !myProcess->waitForFinished(300000) )
-        {
-            failures += inputFiles.at(i) + tr(" (timeout after 5 minutes)\n");
-            delete myProcess;
-            continue;
-        }
-
-        if( myProcess->exitCode() != 0 )
-        {
-            failures += inputFiles.at(i) + tr(" (see %1)\n").arg(errorFilename);
-            delete myProcess;
-            continue;
-        }
         QFileInfo errorFileInfo(errorFilename);
+
+        switch(retval)
+        {
+        case Xsltproc::InvalidStylesheet:
+            QMessageBox::critical(0, tr("Error"), tr("The XSL transformation is invalid."));
+            return;
+        case Xsltproc::InvalidXmlFile:
+            failures += inputFiles.at(i) + tr(" (invalid input file)\n");
+            return;
+        case Xsltproc::GenericFailure:
+            if( errorFileInfo.size() > 0 )
+                failures += inputFiles.at(i) + tr(" (see %1)\n").arg(errorFilename);
+            QFile::remove(outputFile);
+            return;
+        case Xsltproc::Success:
+            break;
+        }
+
         if( errorFileInfo.size() == 0 )
             QFile::remove(errorFilename);
-
-        delete myProcess;
     }
     progress.setValue(inputFiles.count());
 
@@ -200,7 +196,7 @@ void XSLExpress::loadParameters()
 }
 
 bool XSLExpress::loadParametersFromXsl(bool withDefaults)
-{    
+{
     QString xslFile = ui.xslFile->text();
     if( xslFile.isEmpty() )
         return false;
@@ -266,23 +262,4 @@ void XSLExpress::clearValues()
 {
     for(int i=0; i<aParameterValues.count(); i++)
         aParameterValues.at(i)->setText("");
-}
-
-void XSLExpress::testForXsltproc()
-{
-    QProcess *myProcess = new QProcess(this);
-    myProcess->start("xsltproc");
-    if( !myProcess->waitForFinished(300000) )
-    {
-        if( QMessageBox::Yes == QMessageBox::critical( this, tr("XSLExpress"), tr("XSLExpress couldn't find xsltproc because it is not in the path. Would you like to try to locate it yourself? (If you click no the program will close.)"), QMessageBox::Yes | QMessageBox::No ) )
-        {
-            mPath = QFileDialog::getOpenFileName( this, tr("Please locate xsltproc") );
-            if(mPath.isEmpty())
-                QTimer::singleShot(0, this, SLOT(close()));
-        }
-        else
-        {
-            QTimer::singleShot(0, this, SLOT(close()));
-        }
-    }
 }

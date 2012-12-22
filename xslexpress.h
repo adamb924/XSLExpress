@@ -23,7 +23,6 @@ private:
     void populateCombo();
 
     bool loadParametersFromXsl(bool withDefaults = false);
-    void testForXsltproc();
 
     QString mPath;
 
