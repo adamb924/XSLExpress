@@ -58,13 +58,26 @@ void Xsltproc::setParameters(const QHash<QString,QString> & parameters)
 
 Xsltproc::ReturnValue Xsltproc::execute()
 {
+    FILE *errorOutput = 0;
+    if( mErrorRedirect )
+        freopen(mErrorFilename.toUtf8().data(),"w",stderr);
+
     mStylesheet = xsltParseStylesheetFile( (const xmlChar*)mStyleSheetFilename.toUtf8().data() );
+
     if( mStylesheet == 0 )
+    {
+        fflush(errorOutput);
+        fclose(stderr);
         return Xsltproc::InvalidStylesheet;
+    }
 
     mXml = xmlParseFile( (const char*)mXmlFilename.toUtf8().data() );
     if( mXml == 0 )
+    {
+        fflush(errorOutput);
+        fclose(stderr);
         return Xsltproc::InvalidXmlFile;
+    }
 
     QList<QByteArray*> byteArrays;
 
@@ -83,13 +96,13 @@ Xsltproc::ReturnValue Xsltproc::execute()
     }
     params[i] = NULL;
 
-    if( mErrorRedirect )
-        freopen(mErrorFilename.toUtf8().data(),"w",stderr);
-
     mOutput = xsltApplyStylesheet(mStylesheet, mXml, (const char**)params);
 
     if( mErrorRedirect )
+    {
+        fflush(errorOutput);
         fclose(stderr);
+    }
 
     qDeleteAll(byteArrays);
 
