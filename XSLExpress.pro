@@ -1,7 +1,6 @@
 TEMPLATE = app
 TARGET = XSLExpress
-QT += core \
-    gui
+QT += core gui widgets
 HEADERS += DropFilenameLineEdit.h \
     xslexpress.h \
     dropfilenametextedit.h \
@@ -14,7 +13,7 @@ SOURCES += DropFilenameLineEdit.cpp \
 FORMS += xslexpress.ui
 RESOURCES +=
 LIBS += -L./ \
-    -lexslt \
+    -llibexslt \
     -llibxslt \
     -llibxml2 \
     -liconv

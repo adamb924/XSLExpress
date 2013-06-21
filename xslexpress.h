@@ -1,7 +1,7 @@
 #ifndef XSLEXPRESS_H
 #define XSLEXPRESS_H
 
-#include <QtGui/QWidget>
+#include <QWidget>
 #include <QList>
 #include <QLineEdit>
 #include "ui_xslexpress.h"

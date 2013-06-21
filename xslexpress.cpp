@@ -1,7 +1,7 @@
 #include "xslexpress.h"
 
 #include <QtDebug>
-#include <QtGui>
+#include <QtWidgets>
 #include <QProgressDialog>
 #include <QHash>
 

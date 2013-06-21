@@ -8,7 +8,7 @@
 #ifndef DROPFILENAMELINEEDIT_H_
 #define DROPFILENAMELINEEDIT_H_
 
-#include <qlineedit.h>
+#include <QtWidgets/QLineEdit>
 
 class DropFilenameLineEdit: public QLineEdit
 {

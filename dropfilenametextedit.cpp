@@ -2,6 +2,7 @@
 
 #include <QUrl>
 #include <QtDebug>
+#include <QMimeData>
 
 DropFilenameTextEdit::DropFilenameTextEdit(QWidget *parent) :
     QPlainTextEdit(parent)
