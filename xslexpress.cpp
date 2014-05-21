@@ -119,11 +119,12 @@ void XSLExpress::process()
             xmlErrors++;
             failures += inputFiles.at(i) + tr(" (invalid input file)\n");
             break;
+        case Xsltproc::CouldNotOpenOutput:
+            failures += inputFiles.at(i) + tr(" (could not open output file)\n");
+            break;
         case Xsltproc::GenericFailure:
-            if( errorFileInfo.size() > 0 )
-                failures += inputFiles.at(i) + tr(" (see %1)\n").arg(errorFilename);
-            QFile::remove(outputFile);
-            return;
+            failures += inputFiles.at(i) + tr(" (unknown error)\n");
+            break;
         case Xsltproc::Success:
             break;
         }

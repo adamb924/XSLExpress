@@ -27,6 +27,8 @@ Xsltproc::Xsltproc()
     mOutput = 0;
     mXml = 0;
 
+    mParams = 0;
+
     mErrorRedirect = false;
 }
 
@@ -53,50 +55,52 @@ void Xsltproc::setOutputFilename(const QString & filename)
 
 void Xsltproc::setParameters(const QHash<QString,QString> & parameters)
 {
-    mParameters = parameters;
-}
-
-Xsltproc::ReturnValue Xsltproc::execute()
-{
-    FILE *errorOutput = 0;
-    if( mErrorRedirect )
-        freopen(mErrorFilename.toUtf8().data(),"w",stderr);
-
-    mStylesheet = xsltParseStylesheetFile( (const xmlChar*)mStyleSheetFilename.toUtf8().data() );
-
-    if( mStylesheet == 0 )
-    {
-        fflush(errorOutput);
-        fclose(stderr);
-        return Xsltproc::InvalidStylesheet;
-    }
-
-    mXml = xmlParseFile( (const char*)mXmlFilename.toUtf8().data() );
-    if( mXml == 0 )
-    {
-        fflush(errorOutput);
-        fclose(stderr);
-        return Xsltproc::InvalidXmlFile;
-    }
+    if( mParams == 0 ) delete mParams;
+    mParams = new char*[2*parameters.count()+1];
 
     QList<QByteArray*> byteArrays;
-
-    char *params[2*mParameters.count()+1];
-
-    QHashIterator<QString,QString> iter(mParameters);
+    QHashIterator<QString,QString> iter(parameters);
     int i=0;
     while(iter.hasNext())
     {
         iter.next();
         byteArrays << new QByteArray(iter.key().toUtf8());
-        params[i++] = byteArrays.last()->data();
+        mParams[i++] = byteArrays.last()->data();
         QString paramValue = "\"" + iter.value() + "\"";
         byteArrays << new QByteArray(paramValue.toUtf8());
-        params[i++] = byteArrays.last()->data();
+        mParams[i++] = byteArrays.last()->data();
     }
-    params[i] = NULL;
+    mParams[i] = NULL;
+    qDeleteAll(byteArrays);
+}
 
-    mOutput = xsltApplyStylesheet(mStylesheet, mXml, (const char**)params);
+Xsltproc::ReturnValue Xsltproc::execute()
+{
+    Xsltproc::ReturnValue retval = Xsltproc::Success;
+    FILE *foutput = 0;
+    FILE *errorOutput = 0;
+    if( mErrorRedirect )
+        freopen(mErrorFilename.toUtf8().data(),"w",stderr);
+
+    try
+    {
+        mStylesheet = xsltParseStylesheetFile( (const xmlChar*)mStyleSheetFilename.toUtf8().data() );
+        if(mStylesheet == 0) throw Xsltproc::InvalidStylesheet;
+
+        mXml = xmlParseFile( (const char*)mXmlFilename.toUtf8().data() );
+        if(mXml == 0) throw Xsltproc::InvalidXmlFile;
+
+        mOutput = xsltApplyStylesheet(mStylesheet, mXml, (const char**)mParams);
+
+        foutput = fopen(mOutputFilename.toUtf8().data(),"w");
+        if( foutput == 0 ) throw Xsltproc::CouldNotOpenOutput;
+        xsltSaveResultToFile(foutput, mOutput, mStylesheet);
+        fclose(foutput);
+    }
+    catch(Xsltproc::ReturnValue e)
+    {
+        retval = e;
+    }
 
     if( mErrorRedirect )
     {
@@ -104,31 +108,28 @@ Xsltproc::ReturnValue Xsltproc::execute()
         fclose(stderr);
     }
 
-    qDeleteAll(byteArrays);
+    freeResources();
 
-    int bytesWritten = 0;
-    FILE *fid = fopen(mOutputFilename.toUtf8().data(),"w");
-    if( fid == 0 )
-    {
-        qDebug() << "Could not open output file." << mOutputFilename;
-    }
-    else
-    {
-        bytesWritten = xsltSaveResultToFile(fid, mOutput, mStylesheet);
-        fclose(fid);
-    }
+    return retval;
+}
 
+void Xsltproc::freeResources()
+{
     if( mStylesheet != 0 )
+    {
         xsltFreeStylesheet(mStylesheet);
+        mStylesheet = 0;
+    }
     if( mOutput != 0 )
+    {
         xmlFreeDoc(mOutput);
+        mOutput = 0;
+    }
     if( mXml != 0 )
+    {
         xmlFreeDoc(mXml);
-
-    if( bytesWritten > 0 )
-        return Xsltproc::Success;
-    else
-        return Xsltproc::GenericFailure;
+        mXml=0;
+    }
 }
 
 void Xsltproc::setErrorFilename(const QString & filename)
