@@ -4,6 +4,7 @@
 #include <QtWidgets>
 #include <QProgressDialog>
 #include <QHash>
+#include <QErrorMessage>
 
 #include "xsltproc.h"
 
@@ -58,6 +59,14 @@ void XSLExpress::process()
     progress.setWindowModality(Qt::WindowModal);
 
     Xsltproc transform;
+    QString lastXmlErrorMessage;
+    int xmlErrors = 0;
+
+    QErrorMessage *errDialog = new QErrorMessage(this);
+    QFont font("Courier");
+    font.setStyleHint(QFont::TypeWriter);
+    errDialog->setFont(font);
+    errDialog->resize(600,300);
 
     for( int i=0; i<inputFiles.count(); i++)
     {
@@ -75,7 +84,8 @@ void XSLExpress::process()
         }
 
         QFileInfo info(inputFiles.at(i));
-        QString errorFilename = info.absoluteDir().filePath( tr("Error %1.txt").arg(info.fileName()) );
+        QString errorFilename = QDir::temp().filePath( tr(".~err-%1!").arg( info.fileName() ) );
+        QFileInfo errorFileInfo(errorFilename);
 
         QHash<QString,QString> parameters;
         for(int j=0; j<aParameterValues.count(); j++)
@@ -89,19 +99,26 @@ void XSLExpress::process()
         transform.setParameters(parameters);
         Xsltproc::ReturnValue retval = transform.execute();
 
-        QFileInfo errorFileInfo(errorFilename);
+        QString errorMessage;
+        QFile data(errorFileInfo.absoluteFilePath());
+        if (data.open(QFile::ReadOnly)) {
+            QTextStream in(&data);
+            errorMessage = in.readAll();
+            errorMessage.replace("\n","<p>").replace(" ","&nbsp;");
+        }
 
         switch(retval)
         {
         case Xsltproc::InvalidStylesheet:
-            QMessageBox::critical(0, tr("Error"), tr("The XSL transformation is invalid. There is debugging information in %1").arg(errorFilename));
             progress.cancel();
+            errDialog->setWindowTitle(tr("XSL Stylesheet Error"));
+            errDialog->showMessage(errorMessage);
             return;
         case Xsltproc::InvalidXmlFile:
-            qDebug() << "Invalid";
-//            QMessageBox::critical(0, tr("Error"), tr("The XML file is invalid. There is debugging information in %1").arg(errorFilename));
+            lastXmlErrorMessage = errorMessage;
+            xmlErrors++;
             failures += inputFiles.at(i) + tr(" (invalid input file)\n");
-            return;
+            break;
         case Xsltproc::GenericFailure:
             if( errorFileInfo.size() > 0 )
                 failures += inputFiles.at(i) + tr(" (see %1)\n").arg(errorFilename);
@@ -111,13 +128,21 @@ void XSLExpress::process()
             break;
         }
 
-        if( errorFileInfo.size() == 0 )
-            QFile::remove(errorFilename);
+        QFile::remove(errorFilename);
     }
     progress.setValue(inputFiles.count());
 
-    if(!failures.isEmpty())
+    if(xmlErrors > 1)
+    {
         QMessageBox::information(this,tr("Error Report"),tr("These files quit with an error:\n%1").arg(failures.trimmed()));
+        errDialog->setWindowTitle(tr("Most recent XML Input Error"));
+        errDialog->showMessage(lastXmlErrorMessage);
+    }
+    else if(xmlErrors > 0)
+    {
+        errDialog->setWindowTitle(tr("XML Input Error"));
+        errDialog->showMessage(lastXmlErrorMessage);
+    }
 }
 
 void XSLExpress::saveCurrent()
