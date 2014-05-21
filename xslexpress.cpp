@@ -94,9 +94,12 @@ void XSLExpress::process()
         switch(retval)
         {
         case Xsltproc::InvalidStylesheet:
-            QMessageBox::critical(0, tr("Error"), tr("The XSL transformation is invalid."));
+            QMessageBox::critical(0, tr("Error"), tr("The XSL transformation is invalid. There is debugging information in %1").arg(errorFilename));
+            progress.cancel();
             return;
         case Xsltproc::InvalidXmlFile:
+            qDebug() << "Invalid";
+//            QMessageBox::critical(0, tr("Error"), tr("The XML file is invalid. There is debugging information in %1").arg(errorFilename));
             failures += inputFiles.at(i) + tr(" (invalid input file)\n");
             return;
         case Xsltproc::GenericFailure:
