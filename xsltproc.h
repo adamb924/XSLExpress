@@ -1,3 +1,8 @@
+/*!
+  \class Xsltproc
+  \brief An interface class for performing XSL transformations with libxslt.
+*/
+
 #ifndef XSLTPROC_H
 #define XSLTPROC_H
 
