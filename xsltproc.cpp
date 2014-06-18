@@ -77,13 +77,13 @@ void Xsltproc::setParameters(const QHash<QString,QString> & parameters)
 Xsltproc::ReturnValue Xsltproc::execute()
 {
     Xsltproc::ReturnValue retval = Xsltproc::Success;
-    FILE *foutput = 0;
-    FILE *errorOutput = 0;
-    if( mErrorRedirect )
-        freopen(mErrorFilename.toUtf8().data(),"w",stderr);
-
     try
     {
+        if( mErrorRedirect )
+        {
+            if( freopen(mErrorFilename.toUtf8().data(),"w",stderr) == NULL ) throw Xsltproc::GenericFailure;
+        }
+
         mStylesheet = xsltParseStylesheetFile( (const xmlChar*)mStyleSheetFilename.toUtf8().data() );
         if(mStylesheet == 0) throw Xsltproc::InvalidStylesheet;
 
@@ -91,7 +91,9 @@ Xsltproc::ReturnValue Xsltproc::execute()
         if(mXml == 0) throw Xsltproc::InvalidXmlFile;
 
         mOutput = xsltApplyStylesheet(mStylesheet, mXml, (const char**)mParams);
+        if(mOutput == 0) throw Xsltproc::GenericFailure;
 
+        FILE *foutput = 0;
         foutput = fopen(mOutputFilename.toUtf8().data(),"w");
         if( foutput == 0 ) throw Xsltproc::CouldNotOpenOutput;
         xsltSaveResultToFile(foutput, mOutput, mStylesheet);
@@ -104,7 +106,6 @@ Xsltproc::ReturnValue Xsltproc::execute()
 
     if( mErrorRedirect )
     {
-        fflush(errorOutput);
         fclose(stderr);
     }
 
