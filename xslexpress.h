@@ -17,7 +17,7 @@ public:
     ~XSLExpress();
 
 private:
-    Ui::XSLExpressClass ui;
+    Ui::XSLExpressClass *ui;
     QSettings *mSettings;
 
     void populateCombo();

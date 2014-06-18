@@ -9,9 +9,10 @@
 #include "xsltproc.h"
 
 XSLExpress::XSLExpress(QWidget *parent)
-    : QWidget(parent)
+    : QWidget(parent),
+      ui(new Ui::XSLExpressClass)
 {
-    ui.setupUi(this);
+    ui->setupUi(this);
 
     mSettings = new QSettings("AdamBaker","XSLExpress");
 
@@ -19,14 +20,14 @@ XSLExpress::XSLExpress(QWidget *parent)
 
     populateCombo();
 
-    connect( ui.process, SIGNAL(clicked()), this, SLOT(process()) );
-    connect( ui.inputFiles, SIGNAL(drop()), this, SLOT(autoProcess()) );
-    connect( ui.saveCurrent, SIGNAL(clicked()), this, SLOT(saveCurrent()) );
-    connect( ui.deleteCurrent, SIGNAL(clicked()), this, SLOT(deleteCurrent()) );
-    connect( ui.savedSettings, SIGNAL(currentIndexChanged(QString)), this, SLOT(settingsChosen(QString)) );
-    connect( ui.getParametersWithDefaults, SIGNAL(clicked()), this, SLOT(loadParametersWithDefaults()));
-    connect( ui.clearValues, SIGNAL(clicked()), this, SLOT(clearValues()) );
-    connect( ui.xslFile, SIGNAL(textChanged(QString)), this, SLOT(loadParametersWithDefaults()) );
+    connect( ui->process, SIGNAL(clicked()), this, SLOT(process()) );
+    connect( ui->inputFiles, SIGNAL(drop()), this, SLOT(autoProcess()) );
+    connect( ui->saveCurrent, SIGNAL(clicked()), this, SLOT(saveCurrent()) );
+    connect( ui->deleteCurrent, SIGNAL(clicked()), this, SLOT(deleteCurrent()) );
+    connect( ui->savedSettings, SIGNAL(currentIndexChanged(QString)), this, SLOT(settingsChosen(QString)) );
+    connect( ui->getParametersWithDefaults, SIGNAL(clicked()), this, SLOT(loadParametersWithDefaults()));
+    connect( ui->clearValues, SIGNAL(clicked()), this, SLOT(clearValues()) );
+    connect( ui->xslFile, SIGNAL(textChanged(QString)), this, SLOT(loadParametersWithDefaults()) );
 }
 
 XSLExpress::~XSLExpress()
@@ -36,16 +37,16 @@ XSLExpress::~XSLExpress()
 
 void XSLExpress::autoProcess()
 {
-    if( ui.processImmediately->isChecked() )
+    if( ui->processImmediately->isChecked() )
         process();
 }
 
 void XSLExpress::process()
 {
-    QString xslFile = ui.xslFile->text();
-    QString replaceThis = ui.replaceThis->text();
-    QString replaceWith = ui.replaceWith->text();
-    QStringList inputFiles = ui.inputFiles->toPlainText().split("\n", QString::SkipEmptyParts );
+    QString xslFile = ui->xslFile->text();
+    QString replaceThis = ui->replaceThis->text();
+    QString replaceWith = ui->replaceWith->text();
+    QStringList inputFiles = ui->inputFiles->toPlainText().split("\n", QString::SkipEmptyParts );
 
     if( xslFile.isEmpty() )
         return;
@@ -77,7 +78,7 @@ void XSLExpress::process()
         QString outputFile = inputFiles.at(i);
         outputFile.replace(QRegExp(replaceThis), replaceWith);
 
-        if( inputFiles.at(i) == outputFile && !ui.allowOverwrite->isChecked() )
+        if( inputFiles.at(i) == outputFile && !ui->allowOverwrite->isChecked() )
         {
             failures += inputFiles.at(i) + tr(" (overwrite prevented)\n");
             continue;
@@ -154,9 +155,9 @@ void XSLExpress::saveCurrent()
             return;
 
     QString settingsString;
-    settingsString += ui.replaceThis->text() + "\n";
-    settingsString += ui.replaceWith->text() + "\n";
-    settingsString += ui.xslFile->text() + "\n";
+    settingsString += ui->replaceThis->text() + "\n";
+    settingsString += ui->replaceWith->text() + "\n";
+    settingsString += ui->xslFile->text() + "\n";
     for(int i=0; i<aParameterValues.count(); i++)
     {
         settingsString += aParameterNames.at(i)->text() + "\n";
@@ -170,7 +171,7 @@ void XSLExpress::saveCurrent()
 
 void XSLExpress::deleteCurrent()
 {
-    mSettings->remove( ui.savedSettings->currentText() );
+    mSettings->remove( ui->savedSettings->currentText() );
     populateCombo();
 }
 
@@ -191,9 +192,9 @@ void XSLExpress::settingsChosen( const QString & text )
         return;
     }
 
-    ui.replaceThis->setText( settings.at(0) );
-    ui.replaceWith->setText( settings.at(1) );
-    ui.xslFile->setText( xslFilename );
+    ui->replaceThis->setText( settings.at(0) );
+    ui->replaceWith->setText( settings.at(1) );
+    ui->xslFile->setText( xslFilename );
 
     for(int i=0; i < qMin(aParameterValues.count(),(settings.count()-3)/2); i++)
     {
@@ -209,9 +210,9 @@ void XSLExpress::settingsChosen( const QString & text )
 
 void XSLExpress::populateCombo()
 {
-    ui.savedSettings->clear();
-    ui.savedSettings->addItem( "" );
-    ui.savedSettings->addItems( mSettings->allKeys() );
+    ui->savedSettings->clear();
+    ui->savedSettings->addItem( "" );
+    ui->savedSettings->addItems( mSettings->allKeys() );
 }
 
 void XSLExpress::loadParametersWithDefaults()
@@ -226,7 +227,7 @@ void XSLExpress::loadParameters()
 
 bool XSLExpress::loadParametersFromXsl(bool withDefaults)
 {
-    QString xslFile = ui.xslFile->text();
+    QString xslFile = ui->xslFile->text();
     if( xslFile.isEmpty() )
         return false;
 
@@ -248,12 +249,12 @@ bool XSLExpress::loadParametersFromXsl(bool withDefaults)
 
                 aParameterNames << new QLineEdit();
                 aParameterNames.last()->setText(name);
-                ui.parameterGridLayout->addWidget(aParameterNames.last(),count+1,0);
+                ui->parameterGridLayout->addWidget(aParameterNames.last(),count+1,0);
 
                 aParameterValues << new DropFilenameLineEdit(this);
                 if( withDefaults )
                     aParameterValues.last()->setText(value);
-                ui.parameterGridLayout->addWidget(aParameterValues.last(),count+1,1);
+                ui->parameterGridLayout->addWidget(aParameterValues.last(),count+1,1);
 
                 count++;
             }
@@ -270,8 +271,8 @@ bool XSLExpress::loadParametersFromXsl(bool withDefaults)
 
 void XSLExpress::removeParameterLineEdits()
 {
-    ui.parameterName->setVisible(false);
-    ui.parameterValue->setVisible(false);
+    ui->parameterName->setVisible(false);
+    ui->parameterValue->setVisible(false);
 
     qDeleteAll(aParameterNames);
     aParameterNames.clear();
@@ -282,9 +283,9 @@ void XSLExpress::removeParameterLineEdits()
 void XSLExpress::setParameterBoxVisibility()
 {
     if( aParameterNames.count() > 0 )
-        ui.parameterBox->setVisible(true);
+        ui->parameterBox->setVisible(true);
     else
-        ui.parameterBox->setVisible(false);
+        ui->parameterBox->setVisible(false);
 }
 
 void XSLExpress::clearValues()
