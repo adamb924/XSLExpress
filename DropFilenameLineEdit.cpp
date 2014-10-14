@@ -9,18 +9,14 @@
 
 #include "DropFilenameLineEdit.h"
 
-DropFilenameLineEdit::DropFilenameLineEdit( QWidget * parent ) : QLineEdit(parent)
+DropFilenameLineEdit::DropFilenameLineEdit(QWidget *parent) : QLineEdit(parent), mType(NoEncode)
 {
     setAcceptDrops(true);
 }
 
-DropFilenameLineEdit::DropFilenameLineEdit()
+DropFilenameLineEdit::DropFilenameLineEdit( DropType type, QWidget * parent ) : QLineEdit(parent), mType(type)
 {
     setAcceptDrops(true);
-}
-
-DropFilenameLineEdit::~DropFilenameLineEdit()
-{
 }
 
 void DropFilenameLineEdit::dragEnterEvent(QDragEnterEvent *event)
@@ -32,5 +28,14 @@ void DropFilenameLineEdit::dragEnterEvent(QDragEnterEvent *event)
 void DropFilenameLineEdit::dropEvent(QDropEvent* event)
 {
     if (event->mimeData()->hasUrls())
-        this->setText(event->mimeData()->urls().at(0).toString(QUrl::FullyEncoded));
+    {
+        if( mType == DropFilenameLineEdit::UriEncode )
+        {
+            this->setText(event->mimeData()->urls().at(0).toString(QUrl::FullyEncoded));
+        }
+        else
+        {
+            this->setText(event->mimeData()->urls().at(0).toLocalFile());
+        }
+    }
 }

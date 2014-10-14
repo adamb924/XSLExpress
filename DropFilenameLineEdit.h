@@ -13,12 +13,15 @@
 class DropFilenameLineEdit: public QLineEdit
 {
 public:
-	DropFilenameLineEdit();
-        DropFilenameLineEdit( QWidget * parent = 0 );
-	virtual ~DropFilenameLineEdit();
+    enum DropType { UriEncode, NoEncode };
+
+    explicit DropFilenameLineEdit(QWidget * parent = 0 );
+    explicit DropFilenameLineEdit(DropType type = NoEncode, QWidget * parent = 0 );
+
 private:
-        void dragEnterEvent(QDragEnterEvent *event);
-        void dropEvent ( QDropEvent * event );
+    void dragEnterEvent(QDragEnterEvent *event);
+    void dropEvent ( QDropEvent * event );
+    DropType mType;
 };
 
 #endif /* DROPFILENAMELINEEDIT_H_ */

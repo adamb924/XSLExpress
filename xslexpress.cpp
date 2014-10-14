@@ -251,7 +251,7 @@ bool XSLExpress::loadParametersFromXsl(bool withDefaults)
                 aParameterNames.last()->setText(name);
                 ui->parameterGridLayout->addWidget(aParameterNames.last(),count+1,0);
 
-                aParameterValues << new DropFilenameLineEdit(this);
+                aParameterValues << new DropFilenameLineEdit(DropFilenameLineEdit::UriEncode, this);
                 if( withDefaults )
                     aParameterValues.last()->setText(value);
                 ui->parameterGridLayout->addWidget(aParameterValues.last(),count+1,1);
