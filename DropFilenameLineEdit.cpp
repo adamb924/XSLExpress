@@ -32,5 +32,5 @@ void DropFilenameLineEdit::dragEnterEvent(QDragEnterEvent *event)
 void DropFilenameLineEdit::dropEvent(QDropEvent* event)
 {
     if (event->mimeData()->hasUrls())
-        this->setText(event->mimeData()->urls().at(0).toLocalFile());
+        this->setText(event->mimeData()->urls().at(0).toString(QUrl::FullyEncoded));
 }
