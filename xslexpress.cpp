@@ -7,6 +7,7 @@
 #include <QErrorMessage>
 
 #include "xsltproc.h"
+#include "settingsnamedialog.h"
 
 XSLExpress::XSLExpress(QWidget *parent)
     : QWidget(parent),
@@ -150,24 +151,30 @@ void XSLExpress::process()
 
 void XSLExpress::saveCurrent()
 {
-    QString name = QInputDialog::getText( this, tr("XSLExpress"), tr("Enter a name for this settings") );
-    if( mSettings->contains(name) )
-        if( QMessageBox::question (this, tr("XSLExpress"), tr("Do you wish to replace the existing settings with that name?"), QMessageBox::Yes|QMessageBox::No, QMessageBox::No ) == QMessageBox::No )
-            return;
-
-    QString settingsString;
-    settingsString += ui->replaceThis->text() + "\n";
-    settingsString += ui->replaceWith->text() + "\n";
-    settingsString += ui->xslFile->text() + "\n";
-    for(int i=0; i<aParameterValues.count(); i++)
+    SettingsNameDialog dlg( mSettings->allKeys(), this );
+    if( dlg.exec() )
     {
-        settingsString += aParameterNames.at(i)->text() + "\n";
-        settingsString += aParameterValues.at(i)->text() + "\n";
+        QString name = dlg.name();
+
+        if( mSettings->contains(name) )
+            if( QMessageBox::question (this, tr("XSLExpress"), tr("Do you wish to replace the existing settings with that name?"), QMessageBox::Yes|QMessageBox::No, QMessageBox::No ) == QMessageBox::No )
+                return;
+
+        QString settingsString;
+        settingsString += ui->replaceThis->text() + "\n";
+        settingsString += ui->replaceWith->text() + "\n";
+        settingsString += ui->xslFile->text() + "\n";
+        for(int i=0; i<aParameterValues.count(); i++)
+        {
+            settingsString += aParameterNames.at(i)->text() + "\n";
+            settingsString += aParameterValues.at(i)->text() + "\n";
+        }
+
+        mSettings->setValue(name , settingsString );
+
+        populateCombo();
+        ui->savedSettings->setCurrentText(name);
     }
-
-    mSettings->setValue(name , settingsString );
-
-    populateCombo();
 }
 
 void XSLExpress::deleteCurrent()
