@@ -28,6 +28,7 @@ XSLExpress::XSLExpress(QWidget *parent)
     connect( ui->getParametersWithDefaults, SIGNAL(clicked()), this, SLOT(loadParametersWithDefaults()));
     connect( ui->clearValues, SIGNAL(clicked()), this, SLOT(clearValues()) );
     connect( ui->xslFile, SIGNAL(textChanged(QString)), this, SLOT(loadParametersWithDefaults()) );
+    connect( ui->copyButton, SIGNAL(clicked(bool)), this, SLOT(copyCall()) );
 }
 
 XSLExpress::~XSLExpress()
@@ -292,4 +293,25 @@ void XSLExpress::clearValues()
 {
     for(int i=0; i<aParameterValues.count(); i++)
         aParameterValues.at(i)->setText("");
+}
+
+void XSLExpress::copyCall()
+{
+    QString clip = "";
+    QString parameters = "";
+    for(int i=0; i<aParameterNames.count(); i++)
+    {
+        parameters += "--param " + aParameterNames.at(i)->text() + " \"'" + aParameterValues.at(i)->text() + "'\" ";
+    }
+
+    QStringList inputFiles = ui->inputFiles->toPlainText().split("\n", QString::SkipEmptyParts );
+    foreach(QString input, inputFiles)
+    {
+        QString output = input;
+        output.replace(QRegExp(ui->replaceThis->text()), ui->replaceWith->text());
+        clip += QString("xsltproc %1 -o \"%2\" \"%3\" \"%4\"\n").arg(parameters).arg(output).arg(ui->xslFile->text()).arg(input);
+    }
+
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setText( clip );
 }

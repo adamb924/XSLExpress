@@ -41,6 +41,7 @@ private slots:
     void loadParameters();
     void loadParametersWithDefaults();
     void clearValues();
+    void copyCall();
 };
 
 #endif // XSLEXPRESS_H
