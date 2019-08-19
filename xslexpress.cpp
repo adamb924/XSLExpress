@@ -338,10 +338,12 @@ void XSLExpress::showMoreOptions(bool showMore)
 {
     if( showMore )
     {
+        ui->moreButton->setText(tr("Fewer options"));
         ui->extensionWidget->show();
     }
     else
     {
+        ui->moreButton->setText(tr("More options"));
         ui->extensionWidget->hide();
     }
 }
