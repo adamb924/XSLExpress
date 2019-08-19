@@ -87,6 +87,8 @@ void XSLExpress::process()
         QString outputFile = inputFiles.at(i);
         outputFile.replace(QRegExp(replaceThis), replaceWith);
 
+        QDir::setCurrent( QFileInfo(outputFile).dir().absolutePath() );
+
         if( inputFiles.at(i) == outputFile && !ui->allowOverwrite->isChecked() )
         {
             failures += inputFiles.at(i) + tr(" (overwrite prevented)\n");
