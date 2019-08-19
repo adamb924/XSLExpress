@@ -15,8 +15,8 @@ class DropFilenameLineEdit: public QLineEdit
 public:
     enum DropType { UriEncode, NoEncode };
 
-    explicit DropFilenameLineEdit(QWidget * parent = 0 );
-    explicit DropFilenameLineEdit(DropType type = NoEncode, QWidget * parent = 0 );
+    explicit DropFilenameLineEdit(QWidget * parent = nullptr );
+    explicit DropFilenameLineEdit(DropType type = NoEncode, QWidget * parent = nullptr );
 
 private:
     void dragEnterEvent(QDragEnterEvent *event);

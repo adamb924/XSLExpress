@@ -17,6 +17,6 @@ FORMS += xslexpress.ui \
 RESOURCES +=
 LIBS += -L./ \
     -llibexslt \
-    -llibxslt \
-    -llibxml2 \
+    -lxslt \
+    -lxml2
     -liconv

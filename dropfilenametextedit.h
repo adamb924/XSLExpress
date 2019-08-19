@@ -7,7 +7,7 @@ class DropFilenameTextEdit : public QPlainTextEdit
 {
     Q_OBJECT
 public:
-    explicit DropFilenameTextEdit(QWidget *parent = 0);
+    explicit DropFilenameTextEdit(QWidget *parent = nullptr);
 
 private:
     void dragEnterEvent(QDragEnterEvent *event);

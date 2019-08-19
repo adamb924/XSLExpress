@@ -13,7 +13,7 @@ class XSLExpress : public QWidget
     Q_OBJECT
 
 public:
-    XSLExpress(QWidget *parent = 0);
+    XSLExpress(QWidget *parent = nullptr);
     ~XSLExpress();
 
 private:
@@ -42,6 +42,13 @@ private slots:
     void loadParametersWithDefaults();
     void clearValues();
     void copyCall();
+
+    void showMoreOptions(bool showMore);
+
+    void openXslFile();
+    void openXslFileContainingFolder();
+    void openFirstInputFile();
+    void openFirstInputFileContainingFolder();
 };
 
 #endif // XSLEXPRESS_H

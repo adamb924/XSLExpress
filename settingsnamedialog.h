@@ -12,7 +12,7 @@ class SettingsNameDialog : public QDialog
     Q_OBJECT
 
 public:
-    SettingsNameDialog(const QStringList & settings, QWidget *parent = 0);
+    SettingsNameDialog(const QStringList & settings, QWidget *parent = nullptr);
     ~SettingsNameDialog();
 
     QString name() const;

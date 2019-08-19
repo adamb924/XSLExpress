@@ -21,6 +21,8 @@ XSLExpress::XSLExpress(QWidget *parent)
 
     populateCombo();
 
+    ui->extensionWidget->hide();
+
     connect( ui->process, SIGNAL(clicked()), this, SLOT(process()) );
     connect( ui->inputFiles, SIGNAL(drop()), this, SLOT(autoProcess()) );
     connect( ui->saveCurrent, SIGNAL(clicked()), this, SLOT(saveCurrent()) );
@@ -30,6 +32,11 @@ XSLExpress::XSLExpress(QWidget *parent)
     connect( ui->clearValues, SIGNAL(clicked()), this, SLOT(clearValues()) );
     connect( ui->xslFile, SIGNAL(textChanged(QString)), this, SLOT(loadParametersWithDefaults()) );
     connect( ui->copyButton, SIGNAL(clicked(bool)), this, SLOT(copyCall()) );
+    connect( ui->moreButton, SIGNAL(toggled(bool)), this, SLOT(showMoreOptions(bool)) );
+    connect( ui->openXslFileButton, SIGNAL(clicked(bool)), this, SLOT(openXslFile()) );
+    connect( ui->openXslFileFolderButton, SIGNAL(clicked(bool)), this, SLOT(openXslFileContainingFolder()) );
+    connect( ui->openFirstInputFileButton, SIGNAL(clicked(bool)), this, SLOT(openFirstInputFile()));
+    connect( ui->openFirstInputFileFolderButton, SIGNAL(clicked(bool)), this, SLOT(openFirstInputFileContainingFolder()));
 }
 
 XSLExpress::~XSLExpress()
@@ -58,7 +65,7 @@ void XSLExpress::process()
     QString failures;
 
     // so for whatever reason this isn't working
-    QProgressDialog progress( tr("Processing files..."), tr("Cancel"), 0, inputFiles.count(), 0);
+    QProgressDialog progress( tr("Processing files..."), tr("Cancel"), 0, inputFiles.count(), nullptr);
     progress.setWindowModality(Qt::WindowModal);
 
     Xsltproc transform;
@@ -112,21 +119,25 @@ void XSLExpress::process()
 
         switch(retval)
         {
-        case Xsltproc::InvalidStylesheet:
+        case Xsltproc::ApplyStylesheetFailure: // for an invalid stylesheet, show the message and exit
+        case Xsltproc::InvalidStylesheet: // for an invalid stylesheet, show the message and exit
             progress.cancel();
             errDialog->setWindowTitle(tr("XSL Stylesheet Error"));
             errDialog->showMessage(errorMessage);
+            xmlErrors++;
             return;
-        case Xsltproc::InvalidXmlFile:
+        case Xsltproc::InvalidXmlFile: // for an individual failure, make a note and keep going
             lastXmlErrorMessage = errorMessage;
             xmlErrors++;
             failures += inputFiles.at(i) + tr(" (invalid input file)\n");
             break;
         case Xsltproc::CouldNotOpenOutput:
             failures += inputFiles.at(i) + tr(" (could not open output file)\n");
+            xmlErrors++;
             break;
         case Xsltproc::GenericFailure:
             failures += inputFiles.at(i) + tr(" (unknown error)\n");
+            xmlErrors++;
             break;
         case Xsltproc::Success:
             break;
@@ -321,4 +332,57 @@ void XSLExpress::copyCall()
 
     QClipboard *clipboard = QApplication::clipboard();
     clipboard->setText( clip );
+}
+
+void XSLExpress::showMoreOptions(bool showMore)
+{
+    if( showMore )
+    {
+        ui->extensionWidget->show();
+    }
+    else
+    {
+        ui->extensionWidget->hide();
+    }
+}
+
+void XSLExpress::openXslFile()
+{
+    QString xslPath = ui->xslFile->text();
+    if( !xslPath.isEmpty() )
+    {
+        QDesktopServices::openUrl( QUrl::fromLocalFile(xslPath) );
+    }
+}
+
+void XSLExpress::openXslFileContainingFolder()
+{
+    QFileInfo xslInfo(ui->xslFile->text());
+    if( xslInfo.exists() )
+    {
+//        qDebug() << QUrl( xslInfo.absoluteDir().absolutePath() ).toLocalFile();
+        QDesktopServices::openUrl( QUrl::fromLocalFile( xslInfo.absoluteDir().absolutePath() ) );
+    }
+}
+
+void XSLExpress::openFirstInputFile()
+{
+    QStringList inputFiles = ui->inputFiles->toPlainText().split("\n", QString::SkipEmptyParts );
+    if( inputFiles.count() > 0 )
+    {
+        QDesktopServices::openUrl( QUrl::fromLocalFile( inputFiles.first() ) );
+    }
+}
+
+void XSLExpress::openFirstInputFileContainingFolder()
+{
+    QStringList inputFiles = ui->inputFiles->toPlainText().split("\n", QString::SkipEmptyParts );
+    if( inputFiles.count() > 0 )
+    {
+        QFileInfo xslInfo( inputFiles.first() );
+        if( xslInfo.exists() )
+        {
+            QDesktopServices::openUrl( QUrl::fromLocalFile( xslInfo.absoluteDir().absolutePath() ) );
+        }
+    }
 }
