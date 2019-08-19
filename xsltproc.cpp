@@ -97,20 +97,17 @@ Xsltproc::ReturnValue Xsltproc::execute()
         if(mOutput == nullptr || getErrorFileHasContents())
             throw Xsltproc::ApplyStylesheetFailure;
 
-        FILE *foutput = nullptr;
-        foutput = fopen(mOutputFilename.toUtf8().data(),"w");
-        if( foutput == nullptr || getErrorFileHasContents() )
+        if( 0 == xsltSaveResultToFilename(mOutputFilename.toUtf8().data(), mOutput, mStylesheet, 0) )
             throw Xsltproc::CouldNotOpenOutput;
-        xsltSaveResultToFile(foutput, mOutput, mStylesheet);
-        fclose(foutput);
     }
     catch(Xsltproc::ReturnValue e)
     {
         retval = e;
-    }
+    }    
 
     fclose(stderr);
     freeResources();
+
     return retval;
 }
 
