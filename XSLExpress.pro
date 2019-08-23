@@ -20,3 +20,4 @@ LIBS += -L./ \
     -lxslt \
     -lxml2
     -liconv
+RC_ICONS = icons/XSLExpress.ico
