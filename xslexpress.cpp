@@ -111,12 +111,12 @@ void XSLExpress::process()
         transform.setParameters(parameters);
         Xsltproc::ReturnValue retval = transform.execute();
 
-        QString errorMessage;
+        QString stylesheetOutput;
         QFile data(errorFileInfo.absoluteFilePath());
         if (data.open(QFile::ReadOnly)) {
             QTextStream in(&data);
-            errorMessage = in.readAll();
-            errorMessage.replace("\n","<p>").replace(" ","&nbsp;");
+            stylesheetOutput = in.readAll();
+            stylesheetOutput.replace("\n","<p>").replace(" ","&nbsp;");
         }
 
         switch(retval)
@@ -125,11 +125,11 @@ void XSLExpress::process()
         case Xsltproc::InvalidStylesheet: // for an invalid stylesheet, show the message and exit
             progress.cancel();
             errDialog->setWindowTitle(tr("XSL Stylesheet Error"));
-            errDialog->showMessage(errorMessage);
+            errDialog->showMessage(stylesheetOutput);
             xmlErrors++;
             return;
         case Xsltproc::InvalidXmlFile: // for an individual failure, make a note and keep going
-            lastXmlErrorMessage = errorMessage;
+            lastXmlErrorMessage = stylesheetOutput;
             xmlErrors++;
             failures += inputFiles.at(i) + tr(" (invalid input file)\n");
             break;
@@ -142,6 +142,11 @@ void XSLExpress::process()
             xmlErrors++;
             break;
         case Xsltproc::Success:
+            if( !stylesheetOutput.isEmpty() )
+            {
+                errDialog->setWindowTitle(tr("XSL Stylesheet Output (xsl:message)"));
+                errDialog->showMessage(stylesheetOutput);
+            }
             break;
         }
 

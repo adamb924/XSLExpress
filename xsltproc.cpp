@@ -94,7 +94,7 @@ Xsltproc::ReturnValue Xsltproc::execute()
             throw Xsltproc::InvalidXmlFile;
 
         mOutput = xsltApplyStylesheet(mStylesheet, mXml, const_cast<const char**>(mParams) );
-        if(mOutput == nullptr || getErrorFileHasContents())
+        if(mOutput == nullptr )
             throw Xsltproc::ApplyStylesheetFailure;
 
         if( 0 == xsltSaveResultToFilename(mOutputFilename.toUtf8().data(), mOutput, mStylesheet, 0) )
