@@ -97,7 +97,7 @@ Xsltproc::ReturnValue Xsltproc::execute()
         if(mOutput == nullptr )
             throw Xsltproc::ApplyStylesheetFailure;
 
-        if( 0 == xsltSaveResultToFilename(mOutputFilename.toUtf8().data(), mOutput, mStylesheet, 0) )
+        if( -1 == xsltSaveResultToFilename(mOutputFilename.toUtf8().data(), mOutput, mStylesheet, 0) )
             throw Xsltproc::CouldNotOpenOutput;
     }
     catch(Xsltproc::ReturnValue e)
