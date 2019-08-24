@@ -70,7 +70,6 @@ void XSLExpress::process()
 
     Xsltproc transform;
     QString lastXmlErrorMessage;
-    int xmlErrors = 0;
 
     QErrorMessage *errDialog = new QErrorMessage(this);
     QFont font("Courier");
@@ -126,20 +125,16 @@ void XSLExpress::process()
             progress.cancel();
             errDialog->setWindowTitle(tr("XSL Stylesheet Error"));
             errDialog->showMessage(stylesheetOutput);
-            xmlErrors++;
             return;
         case Xsltproc::InvalidXmlFile: // for an individual failure, make a note and keep going
             lastXmlErrorMessage = stylesheetOutput;
-            xmlErrors++;
             failures += inputFiles.at(i) + tr(" (invalid input file)\n");
             break;
         case Xsltproc::CouldNotOpenOutput:
             failures += inputFiles.at(i) + tr(" (could not open output file)\n");
-            xmlErrors++;
             break;
         case Xsltproc::GenericFailure:
             failures += inputFiles.at(i) + tr(" (unknown error)\n");
-            xmlErrors++;
             break;
         case Xsltproc::Success:
             if( !stylesheetOutput.isEmpty() )
@@ -154,15 +149,10 @@ void XSLExpress::process()
     }
     progress.setValue(inputFiles.count());
 
-    if(xmlErrors > 1)
+    if(!failures.isEmpty())
     {
-        QMessageBox::information(this,tr("Error Report"),tr("These files quit with an error:\n%1").arg(failures.trimmed()));
-        errDialog->setWindowTitle(tr("Most recent XML Input Error"));
-        errDialog->showMessage(lastXmlErrorMessage);
-    }
-    else if(xmlErrors > 0)
-    {
-        errDialog->setWindowTitle(tr("XML Input Error"));
+        QMessageBox::information(this,tr("Error Report"),tr("These file(s) quit with an error:\n%1").arg(failures.trimmed()));
+        errDialog->setWindowTitle(tr("Errors"));
         errDialog->showMessage(lastXmlErrorMessage);
     }
 }
