@@ -4,7 +4,9 @@
 #include <QWidget>
 #include <QList>
 #include <QLineEdit>
+
 #include "ui_xslexpress.h"
+#include "settings.h"
 
 class QSettings;
 
@@ -18,7 +20,6 @@ public:
 
 private:
     Ui::XSLExpressClass *ui;
-    QSettings *mSettings;
 
     void populateCombo();
 
@@ -29,8 +30,14 @@ private:
     QList<QLineEdit*> aParameterNames;
     QList<DropFilenameLineEdit*> aParameterValues;
 
+    QHash<QString,Settings> mSavedSettings;
+
     void removeParameterLineEdits();
     void setParameterBoxVisibility();
+
+    void closeEvent(QCloseEvent *event);
+    void readSettings();
+    void writeSettings();
 
 private slots:
     void autoProcess();

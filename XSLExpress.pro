@@ -2,12 +2,14 @@ TEMPLATE = app
 TARGET = XSLExpress
 QT += core gui widgets
 HEADERS += DropFilenameLineEdit.h \
+    settings.h \
     xslexpress.h \
     dropfilenametextedit.h \
     xsltproc.h \
     settingsnamedialog.h
 SOURCES += DropFilenameLineEdit.cpp \
     main.cpp \
+    settings.cpp \
     xslexpress.cpp \
     dropfilenametextedit.cpp \
     xsltproc.cpp \

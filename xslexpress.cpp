@@ -15,7 +15,7 @@ XSLExpress::XSLExpress(QWidget *parent)
 {
     ui->setupUi(this);
 
-    mSettings = new QSettings("AdamBaker","XSLExpress");
+    readSettings();
 
     setParameterBoxVisibility();
 
@@ -41,7 +41,6 @@ XSLExpress::XSLExpress(QWidget *parent)
 
 XSLExpress::~XSLExpress()
 {
-    delete mSettings;
 }
 
 void XSLExpress::autoProcess()
@@ -159,26 +158,25 @@ void XSLExpress::process()
 
 void XSLExpress::saveCurrent()
 {
-    SettingsNameDialog dlg( mSettings->allKeys(), this );
+    SettingsNameDialog dlg( mSavedSettings.keys(), this );
     if( dlg.exec() )
     {
         QString name = dlg.name();
 
-        if( mSettings->contains(name) )
+        if( mSavedSettings.contains(name) )
             if( QMessageBox::question (this, tr("XSLExpress"), tr("Do you wish to replace the existing settings with that name?"), QMessageBox::Yes|QMessageBox::No, QMessageBox::No ) == QMessageBox::No )
                 return;
 
-        QString settingsString;
-        settingsString += ui->replaceThis->text() + "\n";
-        settingsString += ui->replaceWith->text() + "\n";
-        settingsString += ui->xslFile->text() + "\n";
+        Settings s;
+        s.mReplaceThis = ui->replaceThis->text();
+        s.mReplaceWith = ui->replaceWith->text();
+        s.mXslFile = ui->xslFile->text();
         for(int i=0; i<aParameterValues.count(); i++)
         {
-            settingsString += aParameterNames.at(i)->text() + "\n";
-            settingsString += aParameterValues.at(i)->text() + "\n";
+            s.mParameters[ aParameterNames.at(i)->text() ] = aParameterValues.at(i)->text();
         }
 
-        mSettings->setValue(name , settingsString );
+        mSavedSettings[name] = s;
 
         populateCombo();
         ui->savedSettings->setCurrentText(name);
@@ -187,38 +185,38 @@ void XSLExpress::saveCurrent()
 
 void XSLExpress::deleteCurrent()
 {
-    mSettings->remove( ui->savedSettings->currentText() );
+    mSavedSettings.remove( ui->savedSettings->currentText() );
     populateCombo();
 }
 
 void XSLExpress::settingsChosen( const QString & text )
 {
-    if( text.isEmpty() || !mSettings->contains(text) )
+    if( text.isEmpty() || !mSavedSettings.contains(text) )
         return;
 
-    QStringList settings =  mSettings->value(text,"").toString().split("\n", QString::KeepEmptyParts );
-    if( settings.count() < 3 )
-        return;
+    Settings s = mSavedSettings.value(text);
 
-    QString xslFilename = settings.at(2);
-    if( !QFile::exists(xslFilename) )
+    if( !QFile::exists( s.mXslFile ) )
     {
         if( QMessageBox::question(this,tr("XSLExpress"),tr("The XSL file specified in these settings cannot be found. Do you wish to delete these settings?"), QMessageBox::Yes|QMessageBox::No, QMessageBox::No) == QMessageBox::Yes )
             deleteCurrent();
         return;
     }
 
-    ui->replaceThis->setText( settings.at(0) );
-    ui->replaceWith->setText( settings.at(1) );
-    ui->xslFile->setText( xslFilename );
+    ui->replaceThis->setText( s.mReplaceThis );
+    ui->replaceWith->setText( s.mReplaceWith );
+    ui->xslFile->setText( s.mXslFile );
 
-    for(int i=0; i < qMin(aParameterValues.count(),(settings.count()-3)/2); i++)
-    {
-        aParameterNames.at(i)->setText( settings.at(3 + 2*i) );
-        aParameterValues.at(i)->setText( settings.at(3 + 2*i + 1) );
+    int i=0;
+    QHashIterator<QString, QString> iter(s.mParameters);
+    while (iter.hasNext()) {
+        iter.next();
+        aParameterNames.at(i)->setText( iter.key() );
+        aParameterValues.at(i)->setText( iter.value() );
+        i++;
     }
 
-    if( aParameterValues.count() != (settings.count()-3)/2 )
+    if( aParameterValues.count() != s.mParameters.count() )
     {
         QMessageBox::information(this,tr("XSLExpress"),tr("The number of parameters in the XSL file and in the saved settings does not match. You should recheck the values to see if they are correct."));
     }
@@ -228,7 +226,8 @@ void XSLExpress::populateCombo()
 {
     ui->savedSettings->clear();
     ui->savedSettings->addItem( "" );
-    ui->savedSettings->addItems( mSettings->allKeys() );
+    ui->savedSettings->addItems( mSavedSettings.keys() );
+
 }
 
 void XSLExpress::loadParametersWithDefaults()
@@ -302,6 +301,71 @@ void XSLExpress::setParameterBoxVisibility()
         ui->parameterBox->setVisible(true);
     else
         ui->parameterBox->setVisible(false);
+}
+
+void XSLExpress::closeEvent(QCloseEvent *event)
+{
+    Q_UNUSED(event);
+    writeSettings();
+}
+
+void XSLExpress::readSettings()
+{
+    QSettings settings("AdamBaker","XSLExpress");
+    restoreGeometry(settings.value("geometry").toByteArray());
+
+    int size = settings.beginReadArray("savedSettings");
+    for (int i = 0; i < size; ++i) {
+        settings.setArrayIndex(i);
+
+        Settings s;
+        s.mKey = settings.value("key").toString();
+        s.mReplaceThis = settings.value("replaceThis").toString();
+        s.mReplaceWith = settings.value("replaceWith").toString();
+        s.mXslFile = settings.value("xslFile").toString();
+
+        int pSize = settings.beginReadArray("parameters");
+        for(int j=0; j<pSize; j++) {
+            settings.setArrayIndex(j);
+            s.mParameters[ settings.value("parameter").toString() ] = settings.value("value").toString();
+        }
+
+        mSavedSettings[s.mKey] = s;
+    }
+}
+
+void XSLExpress::writeSettings()
+{
+    QSettings settings("AdamBaker","XSLExpress");
+    settings.setValue("geometry", saveGeometry());
+
+    settings.beginWriteArray("savedSettings");
+    int i=0;
+    QHashIterator<QString,Settings> iter(mSavedSettings);
+    while (iter.hasNext()) {
+        iter.next();
+
+        settings.setArrayIndex(i);
+        settings.setValue("key", iter.key() );
+        settings.setValue("replaceThis", iter.value().mReplaceThis );
+        settings.setValue("replaceWith", iter.value().mReplaceWith );
+        settings.setValue("xslFile", iter.value().mXslFile );
+
+        int j=0;
+        QHashIterator<QString,QString> paramIter(iter.value().mParameters);
+        settings.beginWriteArray("parameters");
+        while (paramIter.hasNext()) {
+            paramIter.next();
+            settings.setArrayIndex(j);
+            settings.setValue("parameter", paramIter.key() );
+            settings.setValue("value", paramIter.value() );
+            j++;
+        }
+        settings.endArray();
+
+        i++;
+    }
+    settings.endArray();
 }
 
 void XSLExpress::clearValues()
