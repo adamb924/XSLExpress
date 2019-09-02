@@ -28,7 +28,8 @@ xmlParserInputPtr xmlMyExternalEntityLoader(const char *URL, const char *ID, xml
     QString attemptedPath(URL);
     QFileInfo origInfo(attemptedPath);
     if( origInfo.exists() ) { /// if the original path exists then we're done
-        ret = xmlNewInputFromFile(ctxt, URL);
+        ret = xmlNewInputFromFile(ctxt, attemptedPath.toUtf8() );
+        return ret;
     } else {
         for( int i=0; i<globalXslPaths.count(); i++ ) { /// otherwise cycle through all of the XSL paths the user has specified
             QString newPath = globalXslPaths.at(i).absoluteFilePath( origInfo.fileName() );
@@ -38,13 +39,7 @@ xmlParserInputPtr xmlMyExternalEntityLoader(const char *URL, const char *ID, xml
             }
         }
     }
-
-    /// I'm not sure whether this will ever help; it's from the example code
-    if (defaultLoader != nullptr)
-    {
-        ret = defaultLoader(URL, ID, ctxt);
-    }
-    return(ret);
+    return ret;
 }
 
 
