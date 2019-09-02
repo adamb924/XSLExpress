@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>477</width>
-    <height>481</height>
+    <height>528</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,7 +19,7 @@
   <property name="windowTitle">
    <string>XSLExpress</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3">
+  <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,0">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
      <property name="sizeConstraint">
