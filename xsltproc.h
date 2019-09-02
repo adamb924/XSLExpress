@@ -8,9 +8,13 @@
 
 #include <QHash>
 #include <QString>
+#include <QDir>
 
 #include <libxslt/xslt.h>
 #include <libxslt/transform.h>
+
+extern xmlExternalEntityLoader defaultLoader;
+extern QList<QDir> globalXslPaths;
 
 class Xsltproc
 {
@@ -25,6 +29,7 @@ public:
     void setOutputFilename(const QString & filename);
     void setParameters(const QHash<QString,QString> & parameters);
     void setErrorFilename(const QString & filename);
+    void setXslPaths(const QStringList & paths);
     Xsltproc::ReturnValue execute();
 
 private:

@@ -404,6 +404,13 @@
           </property>
          </spacer>
         </item>
+        <item>
+         <widget class="QPushButton" name="xslPathsButton">
+          <property name="text">
+           <string>XSL Paths...</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
      </layout>

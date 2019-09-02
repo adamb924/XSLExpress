@@ -5,6 +5,7 @@ HEADERS += DropFilenameLineEdit.h \
     settings.h \
     xslexpress.h \
     dropfilenametextedit.h \
+    xslpathsdialog.h \
     xsltproc.h \
     settingsnamedialog.h
 SOURCES += DropFilenameLineEdit.cpp \
@@ -12,10 +13,12 @@ SOURCES += DropFilenameLineEdit.cpp \
     settings.cpp \
     xslexpress.cpp \
     dropfilenametextedit.cpp \
+    xslpathsdialog.cpp \
     xsltproc.cpp \
     settingsnamedialog.cpp
 FORMS += xslexpress.ui \
-    settingsnamedialog.ui
+    settingsnamedialog.ui \
+    xslpathsdialog.ui
 RESOURCES +=
 LIBS += -L./ \
     -llibexslt \

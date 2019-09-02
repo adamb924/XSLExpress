@@ -32,6 +32,8 @@ private:
 
     QHash<QString,Settings> mSavedSettings;
 
+    QStringList mXslPaths;
+
     void removeParameterLineEdits();
     void setParameterBoxVisibility();
 
@@ -49,6 +51,7 @@ private slots:
     void loadParametersWithDefaults();
     void clearValues();
     void copyCall();
+    void xslPaths();
 
     void showMoreOptions(bool showMore);
 

@@ -18,8 +18,41 @@
 #include <QList>
 #include <QtDebug>
 
+/// vaguely bothered by this: I couldn't find a way to make xmlMyExternalEntityLoader a member of Xsltproc, so I made it global
+QList<QDir> globalXslPaths;
+xmlExternalEntityLoader defaultLoader = xmlNoNetExternalEntityLoader;
+
+xmlParserInputPtr xmlMyExternalEntityLoader(const char *URL, const char *ID, xmlParserCtxtPtr ctxt) {
+    xmlParserInputPtr ret = nullptr;
+
+    QString attemptedPath(URL);
+    QFileInfo origInfo(attemptedPath);
+    if( origInfo.exists() ) { /// if the original path exists then we're done
+        ret = xmlNewInputFromFile(ctxt, URL);
+    } else {
+        for( int i=0; i<globalXslPaths.count(); i++ ) { /// otherwise cycle through all of the XSL paths the user has specified
+            QString newPath = globalXslPaths.at(i).absoluteFilePath( origInfo.fileName() );
+            if( QFileInfo::exists( newPath ) ) { /// if one of those exists, then load it and return
+                ret = xmlNewInputFromFile(ctxt, newPath.toUtf8() );
+                return(ret);
+            }
+        }
+    }
+
+    /// I'm not sure whether this will ever help; it's from the example code
+    if (defaultLoader != nullptr)
+    {
+        ret = defaultLoader(URL, ID, ctxt);
+    }
+    return(ret);
+}
+
+
 Xsltproc::Xsltproc()
 {
+    defaultLoader = xmlGetExternalEntityLoader();
+    xmlSetExternalEntityLoader(xmlMyExternalEntityLoader);
+
     exsltRegisterAll();
     xmlSubstituteEntitiesDefault(1);
     xmlLoadExtDtdDefaultValue = 1;
@@ -82,7 +115,7 @@ Xsltproc::ReturnValue Xsltproc::execute()
 {
     Xsltproc::ReturnValue retval = Xsltproc::Success;
     try
-    {
+    {        
         if( freopen(mErrorFilename.toUtf8().data(),"w",stderr) == nullptr ) throw Xsltproc::GenericFailure;
 
         mStylesheet = xsltParseStylesheetFile( reinterpret_cast<const xmlChar*>(mStyleSheetFilename.toUtf8().data()) );
@@ -110,6 +143,80 @@ Xsltproc::ReturnValue Xsltproc::execute()
 
     return retval;
 }
+
+/*
+xmlParserInputPtr Xsltproc::xsltprocExternalEntityLoader(const char *URL, const char *ID, xmlParserCtxtPtr ctxt)
+{
+    xmlParserInputPtr ret = NULL;
+    warningSAXFunc warning = NULL;
+
+    int i;
+    const char *lastsegment = URL;
+    const char *iter = URL;
+
+    if (nbpaths > 0) {
+    while (*iter != 0) {
+        if (*iter == '/')
+        lastsegment = iter + 1;
+        iter++;
+    }
+    }
+
+    if ((ctxt != NULL) && (ctxt->sax != NULL)) {
+    warning = ctxt->sax->warning;
+    ctxt->sax->warning = NULL;
+    }
+
+    if (defaultEntityLoader != NULL) {
+    ret = defaultEntityLoader(URL, ID, ctxt);
+    if (ret != NULL) {
+        if (warning != NULL)
+        ctxt->sax->warning = warning;
+        if (load_trace) {
+        fprintf \
+            (stderr,
+             "Loaded URL=\"%s\" ID=\"%s\"\n",
+             URL ? URL : "(null)",
+             ID ? ID : "(null)");
+        }
+        return(ret);
+    }
+    }
+    for (i = 0;i < nbpaths;i++) {
+    xmlChar *newURL;
+
+    newURL = xmlStrdup((const xmlChar *) paths[i]);
+    newURL = xmlStrcat(newURL, (const xmlChar *) "/");
+    newURL = xmlStrcat(newURL, (const xmlChar *) lastsegment);
+    if (newURL != NULL) {
+        if (defaultEntityLoader != NULL)
+        ret = defaultEntityLoader((const char *)newURL, ID, ctxt);
+        if (ret != NULL) {
+        if (warning != NULL)
+            ctxt->sax->warning = warning;
+        if (load_trace) {
+            fprintf \
+            (stderr,
+             "Loaded URL=\"%s\" ID=\"%s\"\n",
+             newURL,
+             ID ? ID : "(null)");
+        }
+        xmlFree(newURL);
+        return(ret);
+        }
+        xmlFree(newURL);
+    }
+    }
+    if (warning != NULL) {
+    ctxt->sax->warning = warning;
+    if (URL != NULL)
+        warning(ctxt, "failed to load external entity \"%s\"\n", URL);
+    else if (ID != NULL)
+        warning(ctxt, "failed to load external entity \"%s\"\n", ID);
+    }
+    return(NULL);
+}
+*/
 
 void Xsltproc::freeResources()
 {
@@ -150,6 +257,14 @@ void Xsltproc::setErrorFilename(const QString & filename)
     mErrorFilename = filename;
 }
 
+void Xsltproc::setXslPaths(const QStringList &paths)
+{
+    globalXslPaths.clear();
+    foreach(QString p, paths) {
+        globalXslPaths.append( QDir(p) );
+    }
+}
+
 QDebug operator<<(QDebug dbg, const Xsltproc::ReturnValue &value)
 {
     switch(value) {
@@ -174,3 +289,4 @@ QDebug operator<<(QDebug dbg, const Xsltproc::ReturnValue &value)
     }
     return dbg;
 }
+

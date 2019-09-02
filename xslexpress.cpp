@@ -8,6 +8,7 @@
 
 #include "xsltproc.h"
 #include "settingsnamedialog.h"
+#include "xslpathsdialog.h"
 
 XSLExpress::XSLExpress(QWidget *parent)
     : QWidget(parent),
@@ -37,6 +38,7 @@ XSLExpress::XSLExpress(QWidget *parent)
     connect( ui->openXslFileFolderButton, SIGNAL(clicked(bool)), this, SLOT(openXslFileContainingFolder()) );
     connect( ui->openFirstInputFileButton, SIGNAL(clicked(bool)), this, SLOT(openFirstInputFile()));
     connect( ui->openFirstInputFileFolderButton, SIGNAL(clicked(bool)), this, SLOT(openFirstInputFileContainingFolder()));
+    connect( ui->xslPathsButton, SIGNAL(clicked(bool)), this, SLOT(xslPaths() ));
 }
 
 XSLExpress::~XSLExpress()
@@ -69,6 +71,8 @@ void XSLExpress::process()
 
     Xsltproc transform;
     QString lastXmlErrorMessage;
+
+    transform.setXslPaths(mXslPaths);
 
     QErrorMessage *errDialog = new QErrorMessage(this);
     QFont font("Courier");
@@ -329,9 +333,18 @@ void XSLExpress::readSettings()
             settings.setArrayIndex(j);
             s.mParameters[ settings.value("parameter").toString() ] = settings.value("value").toString();
         }
+        settings.endArray();
 
         mSavedSettings[s.mKey] = s;
     }
+    settings.endArray();
+
+    size = settings.beginReadArray("xslPaths");
+    for(int i=0; i<size; i++) {
+        settings.setArrayIndex(i);
+        mXslPaths.append( settings.value("path").toString() );
+    }
+    settings.endArray();
 }
 
 void XSLExpress::writeSettings()
@@ -366,6 +379,13 @@ void XSLExpress::writeSettings()
         i++;
     }
     settings.endArray();
+
+    settings.beginWriteArray("xslPaths");
+    for(int i=0; i<mXslPaths.count(); i++) {
+        settings.setArrayIndex(i);
+        settings.setValue("path", mXslPaths.at(i));
+    }
+    settings.endArray();
 }
 
 void XSLExpress::clearValues()
@@ -393,6 +413,14 @@ void XSLExpress::copyCall()
 
     QClipboard *clipboard = QApplication::clipboard();
     clipboard->setText( clip );
+}
+
+void XSLExpress::xslPaths()
+{
+    XslPathsDialog dlg(mXslPaths, this);
+    if( dlg.exec() == QDialog::Accepted ) {
+        mXslPaths = dlg.paths();
+    }
 }
 
 void XSLExpress::showMoreOptions(bool showMore)
@@ -423,7 +451,6 @@ void XSLExpress::openXslFileContainingFolder()
     QFileInfo xslInfo(ui->xslFile->text());
     if( xslInfo.exists() )
     {
-//        qDebug() << QUrl( xslInfo.absoluteDir().absolutePath() ).toLocalFile();
         QDesktopServices::openUrl( QUrl::fromLocalFile( xslInfo.absoluteDir().absolutePath() ) );
     }
 }
