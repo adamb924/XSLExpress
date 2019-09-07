@@ -406,6 +406,7 @@ void XSLExpress::setStatus(const XSLExpress::Status &status)
         ui->statusLabel->setText(tr("Processing..."));
         break;
     }
+    ui->statusLabel->repaint();
 }
 
 void XSLExpress::clearValues()
