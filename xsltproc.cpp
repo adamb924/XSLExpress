@@ -43,7 +43,7 @@ xmlParserInputPtr xmlMyExternalEntityLoader(const char *URL, const char *ID, xml
 }
 
 
-Xsltproc::Xsltproc()
+Xsltproc::Xsltproc() : mParams(nullptr), mNParams(0), mStylesheet(nullptr), mXml(nullptr), mOutput(nullptr)
 {
     defaultLoader = xmlGetExternalEntityLoader();
     xmlSetExternalEntityLoader(xmlMyExternalEntityLoader);
@@ -51,13 +51,6 @@ Xsltproc::Xsltproc()
     exsltRegisterAll();
     xmlSubstituteEntitiesDefault(1);
     xmlLoadExtDtdDefaultValue = 1;
-
-    mStylesheet = nullptr;
-    mOutput = nullptr;
-    mXml = nullptr;
-
-    mParams = nullptr;
-    mNParams = 0;
 }
 
 Xsltproc::~Xsltproc()
@@ -83,11 +76,14 @@ void Xsltproc::setOutputFilename(const QString & filename)
 
 void Xsltproc::setParameters(const QHash<QString,QString> & parameters)
 {
+    /// delete each allocated string and then delete the array (of strings)
     for(unsigned int i=0; i<mNParams; i++)
     {
         delete mParams[i];
     }
     if( mParams != nullptr ) delete mParams;
+
+    /// the final array element is required to be null by libxslt
     mNParams = static_cast<unsigned int>(parameters.count());
     mParams = new char*[2*mNParams+1];
 
@@ -96,14 +92,12 @@ void Xsltproc::setParameters(const QHash<QString,QString> & parameters)
     int i=0;
     while(iter.hasNext())
     {
-        iter.next();
-        byteArrays << new QByteArray(iter.key().toUtf8());
-        mParams[i++] = byteArrays.last()->data();
-        QString paramValue = "\"" + iter.value() + "\"";
-        byteArrays << new QByteArray(paramValue.toUtf8());
-        mParams[i++] = byteArrays.last()->data();
+        iter.next();        
+        mParams[i++] = strdup( iter.key().toLocal8Bit().data() );
+        mParams[i++] = strdup( ("\"" + iter.value() + "\"").toLocal8Bit().data() );
     }
-    mParams[i] = nullptr;
+
+    mParams[i] = nullptr; /// required by libxslt
 }
 
 Xsltproc::ReturnValue Xsltproc::execute()
