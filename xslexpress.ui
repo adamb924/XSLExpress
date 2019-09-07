@@ -19,7 +19,7 @@
   <property name="windowTitle">
    <string>XSLExpress</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,0">
+  <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,0,0">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
      <property name="sizeConstraint">
@@ -414,6 +414,19 @@
        </layout>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="statusLabel">
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+     <property name="text">
+      <string>Ready</string>
+     </property>
     </widget>
    </item>
   </layout>

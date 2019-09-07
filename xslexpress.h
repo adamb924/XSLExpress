@@ -18,6 +18,8 @@ public:
     XSLExpress(QWidget *parent = nullptr);
     ~XSLExpress();
 
+    enum Status { Ready, Processing };
+
 private:
     Ui::XSLExpressClass *ui;
 
@@ -40,6 +42,8 @@ private:
     void closeEvent(QCloseEvent *event);
     void readSettings();
     void writeSettings();
+
+    void setStatus( const XSLExpress::Status & status );
 
 private slots:
     void autoProcess();

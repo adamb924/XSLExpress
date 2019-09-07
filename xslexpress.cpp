@@ -16,6 +16,8 @@ XSLExpress::XSLExpress(QWidget *parent)
 {
     ui->setupUi(this);
 
+    setStatus(XSLExpress::Ready);
+
     readSettings();
 
     setParameterBoxVisibility();
@@ -53,6 +55,8 @@ void XSLExpress::autoProcess()
 
 void XSLExpress::process()
 {
+
+
     QString xslFile = ui->xslFile->text();
     QString replaceThis = ui->replaceThis->text();
     QString replaceWith = ui->replaceWith->text();
@@ -64,6 +68,8 @@ void XSLExpress::process()
         return;
 
     QString failures;
+
+    setStatus(XSLExpress::Processing);
 
     // so for whatever reason this isn't working
     QProgressDialog progress( tr("Processing files..."), tr("Cancel"), 0, inputFiles.count(), nullptr);
@@ -128,6 +134,7 @@ void XSLExpress::process()
             progress.cancel();
             errDialog->setWindowTitle(tr("XSL Stylesheet Error"));
             errDialog->showMessage(stylesheetOutput);
+            setStatus(XSLExpress::Ready);
             return;
         case Xsltproc::InvalidXmlFile: // for an individual failure, make a note and keep going
             lastXmlErrorMessage = stylesheetOutput;
@@ -158,6 +165,7 @@ void XSLExpress::process()
         errDialog->setWindowTitle(tr("Errors"));
         errDialog->showMessage(lastXmlErrorMessage);
     }
+    setStatus(XSLExpress::Ready);
 }
 
 void XSLExpress::saveCurrent()
@@ -386,6 +394,18 @@ void XSLExpress::writeSettings()
         settings.setValue("path", mXslPaths.at(i));
     }
     settings.endArray();
+}
+
+void XSLExpress::setStatus(const XSLExpress::Status &status)
+{
+    switch(status) {
+    case XSLExpress::Ready:
+        ui->statusLabel->setText(tr("Ready"));
+        break;
+    case XSLExpress::Processing:
+        ui->statusLabel->setText(tr("Processing..."));
+        break;
+    }
 }
 
 void XSLExpress::clearValues()
