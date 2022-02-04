@@ -20,9 +20,26 @@ FORMS += xslexpress.ui \
     settingsnamedialog.ui \
     xslpathsdialog.ui
 RESOURCES +=
-LIBS += -L./ \
-    -llibexslt \
-    -lxslt \
-    -lxml2
-    -liconv
+
 RC_ICONS = icons/XSLExpress.ico
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../xlstproc64/lib/ -lexslt
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../xlstproc64/lib/ -lexslt
+else:unix: LIBS += -L$$PWD/../xlstproc64/lib/ -lexslt
+
+INCLUDEPATH += $$PWD/../xlstproc64/include
+DEPENDPATH += $$PWD/../xlstproc64/include
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../xlstproc64/lib/ -lxml2
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../xlstproc64/lib/ -lxml2
+else:unix: LIBS += -L$$PWD/../xlstproc64/lib/ -lxml2
+
+INCLUDEPATH += $$PWD/../xlstproc64/include
+DEPENDPATH += $$PWD/../xlstproc64/include
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../xlstproc64/lib/ -lxslt
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../xlstproc64/lib/ -lxslt
+else:unix: LIBS += -L$$PWD/../xlstproc64/lib/ -lxslt
+
+INCLUDEPATH += $$PWD/../xlstproc64/include
+DEPENDPATH += $$PWD/../xlstproc64/include
